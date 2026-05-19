@@ -1,0 +1,163 @@
+<!-- Social preview card — 1200×630
+     For LinkedIn / WhatsApp / X / Teams: export to PNG first.
+     Quick options:
+       • https://cloudconvert.com/svg-to-png  (free, 1200×630)
+       • Inkscape: File → Export PNG → set W=1200 H=630
+     Then save the PNG as docs/og-image.png alongside this file.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#0a0e1a"/>
+      <stop offset="100%" stop-color="#0f1a2e"/>
+    </linearGradient>
+    <!-- Accent gradient (text + accents) -->
+    <linearGradient id="ac" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+    <!-- Logo gradient -->
+    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+    <!-- Glow -->
+    <radialGradient id="glow1" cx="30%" cy="30%" r="50%">
+      <stop offset="0%"   stop-color="rgba(124,58,237,.22)"/>
+      <stop offset="100%" stop-color="rgba(124,58,237,0)"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="80%" cy="75%" r="45%">
+      <stop offset="0%"   stop-color="rgba(8,145,178,.2)"/>
+      <stop offset="100%" stop-color="rgba(8,145,178,0)"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+
+  <!-- Dot grid pattern -->
+  <pattern id="dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+    <circle cx="1" cy="1" r="1.2" fill="rgba(255,255,255,.045)"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+
+  <!-- Left accent bar -->
+  <rect x="72" y="80" width="4" height="470" rx="2" fill="url(#ac)" opacity=".6"/>
+
+  <!-- Logo mark -->
+  <rect x="104" y="96" width="72" height="72" rx="16" fill="url(#lg)"/>
+  <!-- warp threads -->
+  <line x1="124" y1="108" x2="124" y2="156" stroke="rgba(255,255,255,.4)" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="140" y1="108" x2="140" y2="156" stroke="rgba(255,255,255,.4)" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="156" y1="108" x2="156" y2="156" stroke="rgba(255,255,255,.4)" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- weft waves -->
+  <path d="M116 118 Q130 112 140 118 Q150 124 164 118" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M116 132 Q130 138 140 132 Q150 126 164 132" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M116 146 Q130 140 140 146 Q150 152 164 146" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+  <!-- TestLoom wordmark -->
+  <text x="198" y="144"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="52" font-weight="900" letter-spacing="-1.5"
+        fill="#eef2ff">TestLoom</text>
+
+  <!-- Tag line -->
+  <text x="104" y="214"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="28" font-weight="400" fill="rgba(241,245,249,.7)"
+        letter-spacing="-.3">Weaving comprehensive test cases from the</text>
+  <text x="104" y="252"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="28" font-weight="400" fill="rgba(241,245,249,.7)"
+        letter-spacing="-.3">threads of your requirements.</text>
+
+  <!-- Gradient headline -->
+  <text x="104" y="340"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="44" font-weight="900" letter-spacing="-1.2"
+        fill="url(#ac)">AI-Powered Test Case Generation</text>
+
+  <!-- Divider -->
+  <rect x="104" y="366" width="640" height="2" rx="1" fill="url(#ac)" opacity=".3"/>
+
+  <!-- Badges row -->
+  <!-- Open Source -->
+  <rect x="104" y="386" width="170" height="44" rx="8" fill="rgba(124,58,237,.15)" stroke="rgba(124,58,237,.4)" stroke-width="1.2"/>
+  <text x="189" y="414" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="16" font-weight="700" fill="#a78bfa" letter-spacing=".8">✦ OPEN SOURCE</text>
+
+  <!-- LLM-Agnostic -->
+  <rect x="290" y="386" width="172" height="44" rx="8" fill="rgba(8,145,178,.15)" stroke="rgba(8,145,178,.4)" stroke-width="1.2"/>
+  <text x="376" y="414" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="16" font-weight="700" fill="#38bdf8" letter-spacing=".8">LLM-AGNOSTIC</text>
+
+  <!-- Apache 2.0 -->
+  <rect x="478" y="386" width="146" height="44" rx="8" fill="rgba(5,150,105,.15)" stroke="rgba(5,150,105,.4)" stroke-width="1.2"/>
+  <text x="551" y="414" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="16" font-weight="700" fill="#34d399" letter-spacing=".8">APACHE 2.0</text>
+
+  <!-- Stats -->
+  <!-- 100+ providers -->
+  <text x="104" y="490"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="48" font-weight="900" fill="url(#ac)">100+</text>
+  <text x="104" y="518"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="15" font-weight="600" fill="rgba(148,163,184,.8)" letter-spacing="1">LLM PROVIDERS</text>
+
+  <text x="290" y="490"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="48" font-weight="900" fill="url(#ac)">70%</text>
+  <text x="290" y="518"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="15" font-weight="600" fill="rgba(148,163,184,.8)" letter-spacing="1">EFFORT REDUCTION</text>
+
+  <text x="490" y="490"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="48" font-weight="900" fill="url(#ac)">3×</text>
+  <text x="490" y="518"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="15" font-weight="600" fill="rgba(148,163,184,.8)" letter-spacing="1">FASTER COVERAGE</text>
+
+  <!-- Right side: architecture mini-diagram -->
+  <rect x="780" y="80" width="348" height="470" rx="16" fill="rgba(255,255,255,.025)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+
+  <!-- Layers in mini diagram -->
+  <rect x="800" y="100" width="308" height="52" rx="8" fill="rgba(124,58,237,.15)" stroke="rgba(124,58,237,.3)" stroke-width="1"/>
+  <text x="954" y="132" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="700" fill="#a78bfa">Requirements / Stories / API Specs</text>
+
+  <text x="954" y="176" text-anchor="middle" font-family="system-ui" font-size="12" fill="rgba(148,163,184,.5)">▼</text>
+
+  <rect x="800" y="186" width="308" height="52" rx="8" fill="rgba(8,145,178,.15)" stroke="rgba(8,145,178,.3)" stroke-width="1"/>
+  <text x="954" y="213" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="#38bdf8">Prompt Engine</text>
+  <text x="954" y="229" text-anchor="middle" font-family="system-ui" font-size="11" fill="rgba(148,163,184,.7)">Jinja2 + YAML Templates</text>
+
+  <text x="954" y="258" text-anchor="middle" font-family="system-ui" font-size="12" fill="rgba(148,163,184,.5)">▼</text>
+
+  <rect x="800" y="268" width="308" height="52" rx="8" fill="rgba(5,150,105,.15)" stroke="rgba(5,150,105,.3)" stroke-width="1"/>
+  <text x="954" y="295" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="#34d399">LLM Gateway (LiteLLM)</text>
+  <text x="954" y="311" text-anchor="middle" font-family="system-ui" font-size="11" fill="rgba(148,163,184,.7)">OpenAI · Anthropic · Ollama · Azure</text>
+
+  <text x="954" y="340" text-anchor="middle" font-family="system-ui" font-size="12" fill="rgba(148,163,184,.5)">▼</text>
+
+  <rect x="800" y="350" width="308" height="52" rx="8" fill="rgba(251,146,60,.12)" stroke="rgba(251,146,60,.28)" stroke-width="1"/>
+  <text x="954" y="377" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="#fb923c">Generator</text>
+  <text x="954" y="393" text-anchor="middle" font-family="system-ui" font-size="11" fill="rgba(148,163,184,.7)">RequirementGenerator · RAG · Agents</text>
+
+  <text x="954" y="422" text-anchor="middle" font-family="system-ui" font-size="12" fill="rgba(148,163,184,.5)">▼</text>
+
+  <rect x="800" y="432" width="308" height="52" rx="8" fill="rgba(52,211,153,.12)" stroke="rgba(52,211,153,.28)" stroke-width="1"/>
+  <text x="954" y="459" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="#34d399">Test Suite Output</text>
+  <text x="954" y="475" text-anchor="middle" font-family="system-ui" font-size="11" fill="rgba(148,163,184,.7)">JSON · Markdown · CSV · REST API</text>
+
+  <!-- Bottom URL -->
+  <text x="104" y="598"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="16" fill="rgba(148,163,184,.6)" letter-spacing=".3">github.com/saurabh-oss/testloom</text>
+</svg>

@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TestLoom — AI-Powered Test Case Generation</title>
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <!-- SEO -->
+  <meta name="description" content="TestLoom is an open-source, LLM-agnostic framework that weaves comprehensive test suites from requirements using AI. Supports OpenAI, Anthropic, Ollama, Azure and 100+ providers.">
+  <meta name="keywords" content="test generation, AI testing, LLM, test automation, quality engineering, open source, LangChain, LangGraph">
+  <meta name="theme-color" content="#0a0e1a">
+  <link rel="canonical" href="https://saurabh-oss.github.io/testloom/">
+
+  <!-- Open Graph — LinkedIn, WhatsApp, Teams, Facebook -->
+  <meta property="og:type"        content="website">
+  <meta property="og:site_name"   content="TestLoom">
+  <meta property="og:url"         content="https://saurabh-oss.github.io/testloom/">
+  <meta property="og:title"       content="TestLoom — AI-Powered Test Case Generation">
+  <meta property="og:description" content="Open-source, LLM-agnostic framework for AI test generation. No vendor lock-in. Supports OpenAI, Anthropic, Ollama, Azure &amp; 100+ providers.">
+  <meta property="og:image"       content="https://saurabh-oss.github.io/testloom/og-image.png">
+  <meta property="og:image:width"  content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt"   content="TestLoom — AI-Powered Test Case Generation Framework">
+  <!-- NOTE: og-image.png must be a PNG for LinkedIn/WhatsApp/Teams.
+       Export docs/og-image.svg → PNG using: https://cloudconvert.com/svg-to-png
+       then save as docs/og-image.png (1200×630). -->
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="TestLoom — AI-Powered Test Case Generation">
+  <meta name="twitter:description" content="Open-source, LLM-agnostic framework for AI test generation. 100+ LLM providers, Apache 2.0.">
+  <meta name="twitter:image"       content="https://saurabh-oss.github.io/testloom/og-image.png">
+  <meta name="twitter:image:alt"   content="TestLoom framework architecture">
+
+  <style>
+    /* ─── Reset ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    /* ─── Design Tokens ──────────────────────────────── */
+    :root {
+      --dark:      #0a0e1a;
+      --dark-2:    #0f1629;
+      --dark-3:    #17213a;
+      --light:     #ffffff;
+      --light-2:   #f8fafc;
+      --light-3:   #f1f5f9;
+
+      --text-d:    #eef2ff;
+      --text-d2:   #94a3b8;
+      --text-l:    #0f172a;
+      --text-l2:   #475569;
+
+      --purple:    #7c3aed;
+      --purple-l:  #a78bfa;
+      --teal:      #0891b2;
+      --teal-l:    #38bdf8;
+      --green:     #059669;
+      --green-l:   #34d399;
+
+      --grad:      linear-gradient(135deg, #7c3aed 0%, #0891b2 100%);
+      --radius:    12px;
+      --shadow:    0 4px 28px rgba(0,0,0,0.35);
+      --shadow-l:  0 4px 24px rgba(0,0,0,0.09);
+      --font:      -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --mono:      'Cascadia Code','Fira Code','SF Mono','Consolas', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--dark);
+      color: var(--text-d);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    /* ─── Typography ─────────────────────────────────── */
+    h1,h2,h3,h4 { line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; }
+
+    /* ─── Utilities ──────────────────────────────────── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    .grad-text {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 14px; border-radius: 999px;
+      font-size: .72rem; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .bp { background: rgba(124,58,237,.14); color: var(--purple-l); border: 1px solid rgba(124,58,237,.3); }
+    .bt { background: rgba(8,145,178,.14);  color: var(--teal-l);   border: 1px solid rgba(8,145,178,.3); }
+    .bg { background: rgba(5,150,105,.14);  color: var(--green-l);  border: 1px solid rgba(5,150,105,.3); }
+
+    /* ─── Sections ───────────────────────────────────── */
+    .sec { padding: 100px 0; }
+    .sec-light  { background: var(--light);  color: var(--text-l); }
+    .sec-light2 { background: var(--light-2); color: var(--text-l); }
+    .sec-dark2  { background: var(--dark-2); }
+    .sec-dark3  { background: var(--dark-3); }
+
+    .sec-hd { text-align: center; margin-bottom: 68px; }
+    .sec-hd h2 { font-size: clamp(1.9rem, 4vw, 2.75rem); margin-bottom: 14px; }
+    .sec-hd p  { font-size: 1.1rem; max-width: 580px; margin: 0 auto; opacity: .7; }
+
+    /* ─── NAV ────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(10,14,26,.9);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .nav-in {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 62px; max-width: 1200px; margin: 0 auto; padding: 0 24px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text-d);
+      font-weight: 800; font-size: 1.1rem; letter-spacing: -.01em;
+    }
+    .logo svg { width: 30px; height: 30px; flex-shrink: 0; }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a {
+      color: var(--text-d2); text-decoration: none;
+      font-size: .875rem; transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text-d); }
+    .nav-gh {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--grad); color: #fff;
+      padding: 8px 18px; border-radius: 8px;
+      font-size: .85rem; font-weight: 600;
+      text-decoration: none; transition: opacity .2s, transform .15s;
+    }
+    .nav-gh:hover { opacity: .88; transform: translateY(-1px); }
+    @media(max-width:700px){ .nav-links { display: none; } }
+
+    /* ─── HERO ───────────────────────────────────────── */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center;
+      position: relative; overflow: hidden;
+      background:
+        radial-gradient(ellipse 80% 55% at 50% -15%, rgba(124,58,237,.28) 0%, transparent 65%),
+        radial-gradient(ellipse 55% 45% at 85% 85%,  rgba(8,145,178,.2)   0%, transparent 60%),
+        var(--dark);
+    }
+    /* dot grid */
+    .hero::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+    .hero-body {
+      position: relative; z-index: 1; width: 100%;
+      text-align: center; padding: 130px 24px 80px;
+    }
+    .hero-badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+    .hero-title {
+      font-size: clamp(2.6rem, 7.5vw, 5.2rem);
+      font-weight: 900; letter-spacing: -.035em;
+      line-height: 1.08; margin-bottom: 22px;
+    }
+    .hero-sub {
+      font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+      color: var(--text-d2); max-width: 620px;
+      margin: 0 auto 48px; font-weight: 400;
+    }
+    .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 72px; }
+
+    .btn-grad {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--grad); color: #fff;
+      padding: 14px 32px; border-radius: 10px;
+      font-size: 1rem; font-weight: 700; text-decoration: none;
+      box-shadow: 0 6px 24px rgba(124,58,237,.4);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-grad:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(124,58,237,.52); }
+
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.055); color: var(--text-d);
+      padding: 14px 32px; border-radius: 10px;
+      font-size: 1rem; font-weight: 600; text-decoration: none;
+      border: 1px solid rgba(255,255,255,.13);
+      transition: background .2s, border-color .2s;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.24); }
+
+    .hero-stats {
+      display: flex; justify-content: center; gap: 52px; flex-wrap: wrap;
+      padding: 32px 0; border-top: 1px solid rgba(255,255,255,.07);
+      max-width: 680px; margin: 0 auto;
+    }
+    .hero-stat { text-align: center; }
+    .hs-num {
+      font-size: 2.1rem; font-weight: 900;
+      background: var(--grad);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hs-lbl { font-size: .72rem; color: var(--text-d2); text-transform: uppercase; letter-spacing: .1em; margin-top: 3px; }
+
+    .scroll-hint {
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: var(--text-d2); font-size: .72rem;
+      animation: bob 2.2s ease-in-out infinite;
+    }
+    @keyframes bob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(7px)} }
+
+    /* ─── PROBLEM ─────────────────────────────────────── */
+    .prob-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px,1fr)); gap: 24px; }
+    .prob-card {
+      background: var(--light-2); border-radius: var(--radius);
+      padding: 32px; border: 1px solid rgba(0,0,0,.07);
+      position: relative; overflow: hidden;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .prob-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-l); }
+    .prob-card::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; background:var(--grad); }
+    .prob-n  { font-size: 3.2rem; font-weight: 900; color: rgba(124,58,237,.1); line-height:1; margin-bottom:14px; }
+    .prob-card h3 { font-size: 1.2rem; color: var(--text-l); margin-bottom: 8px; }
+    .prob-card p  { color: var(--text-l2); font-size: .93rem; line-height: 1.75; }
+    .prob-stat { display:inline-block; margin-top:18px; font-size:1.6rem; font-weight:900; color:var(--purple); }
+    .prob-stat-lbl { font-size:.78rem; color:var(--text-l2); margin-top:2px; }
+
+    /* ─── ARCHITECTURE ─────────────────────────────────── */
+    .arch-wrap { max-width: 920px; margin: 0 auto; }
+
+    /* ─── FEATURES ─────────────────────────────────────── */
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px,1fr)); gap: 22px; }
+    .feat-card {
+      background: var(--light); border-radius: var(--radius);
+      padding: 28px; border: 1px solid rgba(0,0,0,.08);
+      transition: transform .25s, box-shadow .25s, border-color .25s;
+    }
+    .feat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-l); border-color: rgba(124,58,237,.22); }
+    .fi { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; margin-bottom:18px; font-size:1.4rem; }
+    .fi-p { background: rgba(124,58,237,.1); }
+    .fi-t { background: rgba(8,145,178,.1); }
+    .fi-g { background: rgba(5,150,105,.1); }
+    .feat-card h3 { font-size:1.07rem; color:var(--text-l); margin-bottom:7px; }
+    .feat-card p  { color:var(--text-l2); font-size:.88rem; line-height:1.75; }
+
+    /* ─── HOW IT WORKS ─────────────────────────────────── */
+    .steps {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 0; position: relative; max-width: 900px; margin: 0 auto;
+    }
+    .steps::before {
+      content:''; position:absolute; top:31px;
+      left: calc(12.5% + 31px); right: calc(12.5% + 31px);
+      height:2px;
+      background: linear-gradient(90deg, var(--purple), var(--teal));
+      z-index: 0;
+    }
+    .step { text-align:center; padding: 0 20px; position:relative; z-index:1; }
+    .step-n {
+      width:62px; height:62px; border-radius:50%;
+      background: var(--grad); color:#fff;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.3rem; font-weight:900;
+      margin: 0 auto 18px;
+      box-shadow: 0 0 0 7px var(--dark-2);
+    }
+    .step h3 { font-size:1.05rem; margin-bottom:7px; }
+    .step p  { font-size:.85rem; color:var(--text-d2); line-height:1.65; }
+    @media(max-width:720px){
+      .steps { grid-template-columns:1fr 1fr; }
+      .steps::before { display:none; }
+    }
+    @media(max-width:440px){
+      .steps { grid-template-columns:1fr; }
+    }
+
+    /* ─── CODE TABS ─────────────────────────────────────── */
+    .tabs { display:flex; gap:4px; flex-wrap:wrap; }
+    .tab {
+      padding: 9px 17px; border-radius:8px 8px 0 0;
+      font-size:.8rem; font-weight:700; cursor:pointer;
+      background: rgba(255,255,255,.05); color:var(--text-d2);
+      border: 1px solid rgba(255,255,255,.08); border-bottom:none;
+      transition: all .2s;
+    }
+    .tab.on { background:#1a2540; color:var(--text-d); border-color:rgba(255,255,255,.13); }
+    .code-blk {
+      background: #131d30; border-radius:0 12px 12px 12px;
+      padding: 28px 32px; font-family:var(--mono); font-size:.875rem;
+      line-height:1.9; overflow-x:auto;
+      border: 1px solid rgba(255,255,255,.09);
+    }
+    .pnl { display:none; }
+    .pnl.on { display:block; }
+    /* syntax colours */
+    .k  { color:#a78bfa; } /* keyword */
+    .s  { color:#34d399; } /* string */
+    .c  { color:#475569; font-style:italic; } /* comment */
+    .n  { color:#fb923c; } /* number */
+    .f  { color:#f0abfc; } /* function */
+    .v  { color:#e2e8f0; } /* variable */
+    .op { color:#64748b; } /* operator */
+    .cm { color:#38bdf8; } /* command */
+
+    /* ─── PROVIDERS ──────────────────────────────────────── */
+    .prov-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:16px; }
+    .prov-card {
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      padding: 24px 16px; border-radius:var(--radius);
+      background:var(--light); border:1px solid rgba(0,0,0,.08);
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+    }
+    .prov-card:hover { transform:translateY(-3px); border-color:rgba(124,58,237,.22); box-shadow:0 6px 18px rgba(124,58,237,.1); }
+    .prov-ico { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
+    .prov-name { font-size:.88rem; font-weight:700; color:var(--text-l); }
+    .prov-note { font-size:.73rem; color:var(--text-l2); }
+
+    /* ─── ROADMAP ─────────────────────────────────────────── */
+    .rm { display:flex; flex-direction:column; gap:0; max-width:780px; margin:0 auto; }
+    .rm-row { display:grid; grid-template-columns:110px 1fr; gap:24px; align-items:start; }
+    .rm-phase { text-align:right; padding-top:4px; }
+    .rm-pl  { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.1em; color:var(--text-l2); }
+    .rm-pn  { font-size:.95rem; font-weight:800; color:var(--text-l); }
+    .rm-line { display:flex; align-items:flex-start; gap:16px; padding-bottom:32px; position:relative; }
+    .rm-line::before {
+      content:''; position:absolute;
+      left:5px; top:20px; bottom:0; width:2px;
+      background: rgba(0,0,0,.1);
+    }
+    .rm-row:last-child .rm-line::before { display:none; }
+    .rm-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; margin-top:5px; z-index:1; }
+    .rd-done   { background:var(--green); box-shadow:0 0 0 3px rgba(5,150,105,.2); }
+    .rd-active { background:var(--purple); box-shadow:0 0 0 3px rgba(124,58,237,.22); animation:pulse 2.2s infinite; }
+    .rd-plan   { background:rgba(0,0,0,.15); border:2px solid rgba(0,0,0,.18); }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 3px rgba(124,58,237,.22)} 50%{box-shadow:0 0 0 9px rgba(124,58,237,.08)} }
+    .rm-info h3 { font-size:.98rem; font-weight:700; color:var(--text-l); margin-bottom:4px; }
+    .rm-info p  { font-size:.86rem; color:var(--text-l2); line-height:1.6; }
+    @media(max-width:520px){ .rm-row { grid-template-columns:1fr; } .rm-phase { text-align:left; } }
+
+    /* ─── CTA ─────────────────────────────────────────────── */
+    .cta-sec {
+      background: linear-gradient(135deg, #3b1078 0%, #0c3d6e 100%);
+      padding: 100px 0; text-align:center; position:relative; overflow:hidden;
+    }
+    .cta-sec::before {
+      content:''; position:absolute; inset:0;
+      background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .cta-sec h2 { font-size:clamp(2rem,4.5vw,2.9rem); color:#fff; margin-bottom:14px; position:relative; }
+    .cta-sec p  { font-size:1.1rem; color:rgba(255,255,255,.72); max-width:480px; margin:0 auto 48px; position:relative; }
+    .cta-btns   { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative; }
+    .btn-white {
+      display:inline-flex; align-items:center; gap:8px;
+      background:#fff; color:#3b1078;
+      padding:14px 32px; border-radius:10px;
+      font-size:1rem; font-weight:800; text-decoration:none;
+      box-shadow:0 4px 18px rgba(0,0,0,.2);
+      transition:transform .2s, box-shadow .2s;
+    }
+    .btn-white:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,.3); }
+    .btn-ghost {
+      display:inline-flex; align-items:center; gap:8px;
+      background:transparent; color:#fff;
+      padding:14px 32px; border-radius:10px;
+      font-size:1rem; font-weight:600; text-decoration:none;
+      border:2px solid rgba(255,255,255,.38);
+      transition:border-color .2s, background .2s;
+    }
+    .btn-ghost:hover { border-color:#fff; background:rgba(255,255,255,.1); }
+
+    /* ─── FOOTER ──────────────────────────────────────────── */
+    footer {
+      background: #06080e; border-top:1px solid rgba(255,255,255,.06);
+      padding: 56px 0 32px; color:var(--text-d2);
+    }
+    .ft-grid {
+      display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px;
+      max-width:1200px; margin:0 auto; padding:0 24px;
+    }
+    .ft-brand p { font-size:.875rem; line-height:1.75; margin-top:12px; }
+    footer h4 { font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.1em; color:var(--text-d2); margin-bottom:16px; }
+    footer ul { list-style:none; display:flex; flex-direction:column; gap:10px; }
+    footer a  { color:var(--text-d2); text-decoration:none; font-size:.875rem; transition:color .2s; }
+    footer a:hover { color:var(--text-d); }
+    .ft-btm {
+      border-top:1px solid rgba(255,255,255,.06);
+      margin-top:48px; padding:24px 24px 0;
+      max-width:1200px; margin-left:auto; margin-right:auto;
+      display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+    }
+    .ft-btm p { font-size:.78rem; }
+    @media(max-width:768px){ .ft-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:440px){ .ft-grid { grid-template-columns:1fr; } }
+
+    /* ─── Fade-up animation ───────────────────────────────── */
+    .fu { opacity:0; transform:translateY(26px); transition:opacity .65s ease, transform .65s ease; }
+    .fu.in { opacity:1; transform:translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- ───────────────────────────── NAV ───────────────────────────── -->
+<nav>
+  <div class="nav-in">
+    <a href="#" class="logo">
+      <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="lg0" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c3aed"/>
+            <stop offset="100%" stop-color="#0891b2"/>
+          </linearGradient>
+        </defs>
+        <rect width="30" height="30" rx="7" fill="url(#lg0)"/>
+        <path d="M7 9.5 Q15 7.5 23 9.5 Q15 11.5 7 13.5 Q15 15.5 23 17.5 Q15 19.5 7 21.5"
+              stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <line x1="9"  y1="7.5" x2="9"  y2="23" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="15" y1="7.5" x2="15" y2="23" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="21" y1="7.5" x2="21" y2="23" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      TestLoom
+    </a>
+
+    <div class="nav-links">
+      <a href="#problem">Problem</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#features">Features</a>
+      <a href="#quickstart">Quick Start</a>
+      <a href="#roadmap">Roadmap</a>
+    </div>
+
+    <a class="nav-gh" href="https://github.com/saurabh-oss/testloom" target="_blank" rel="noopener">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- ───────────────────────────── HERO ──────────────────────────── -->
+<section class="hero">
+  <div class="hero-body">
+    <div class="hero-badges">
+      <span class="badge bp">✦ Open Source</span>
+      <span class="badge bt">LLM-Agnostic</span>
+      <span class="badge bg">Apache 2.0</span>
+    </div>
+
+    <h1 class="hero-title">
+      Weave Perfect Test Cases<br>
+      <span class="grad-text">from Your Requirements</span>
+    </h1>
+
+    <p class="hero-sub">
+      TestLoom uses AI to generate comprehensive, traceable test suites from user stories,
+      API specs, and acceptance criteria — with zero vendor lock-in.
+    </p>
+
+    <div class="hero-btns">
+      <a href="#quickstart" class="btn-grad">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Get Started
+      </a>
+      <a href="https://github.com/saurabh-oss/testloom" class="btn-outline" target="_blank" rel="noopener">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hs-num">100+</div><div class="hs-lbl">LLM Providers</div></div>
+      <div class="hero-stat"><div class="hs-num">0</div><div class="hs-lbl">Vendor Lock-in</div></div>
+      <div class="hero-stat"><div class="hs-num">3×</div><div class="hs-lbl">Faster Coverage</div></div>
+      <div class="hero-stat"><div class="hs-num">70%</div><div class="hs-lbl">Effort Reduction</div></div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll to explore</span>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+  </div>
+</section>
+
+<!-- ─────────────────────────── PROBLEM ─────────────────────────── -->
+<section class="sec sec-light" id="problem">
+  <div class="container">
+    <div class="sec-hd fu">
+      <span class="badge bp" style="margin-bottom:16px">The Problem</span>
+      <h2 style="color:var(--text-l)">Testing slows down every team</h2>
+      <p style="color:var(--text-l2)">Manual test case authoring is the bottleneck nobody talks about — until the release slips.</p>
+    </div>
+    <div class="prob-grid">
+      <div class="prob-card fu">
+        <div class="prob-n">01</div>
+        <h3>Manual &amp; Time-Consuming</h3>
+        <p>QA engineers spend 35–50% of their sprint writing test cases by hand, re-reading requirements, and formatting specifications — work AI can do in seconds.</p>
+        <div class="prob-stat">~40%</div>
+        <div class="prob-stat-lbl">of SDLC effort is testing overhead</div>
+      </div>
+      <div class="prob-card fu">
+        <div class="prob-n">02</div>
+        <h3>Coverage Gaps &amp; Rework</h3>
+        <p>Without systematic generation, edge cases are missed, requirements are misinterpreted, and defects slip to production — triggering expensive re-test cycles.</p>
+        <div class="prob-stat">3–5×</div>
+        <div class="prob-stat-lbl">iteration rounds due to missed edge cases</div>
+      </div>
+      <div class="prob-card fu">
+        <div class="prob-n">03</div>
+        <h3>Vendor Lock-in &amp; Cost Risk</h3>
+        <p>Existing AI testing tools tie organisations to a single LLM provider with opaque pricing — forcing full pipeline rebuilds when providers change policies or prices.</p>
+        <div class="prob-stat">60%+</div>
+        <div class="prob-stat-lbl">of enterprise test suites remain fully manual</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────── ARCHITECTURE ──────────────────────── -->
+<section class="sec sec-dark2" id="architecture">
+  <div class="container">
+    <div class="sec-hd fu">
+      <span class="badge bt" style="margin-bottom:16px">Architecture</span>
+      <h2>Open. Composable. LLM-Agnostic.</h2>
+      <p>Every layer is swappable. Every provider is plug-and-play. No proprietary dependencies.</p>
+    </div>
+    <div class="arch-wrap fu">
+      <svg viewBox="0 0 900 580" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+        <defs>
+          <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#0891b2"/>
+          </linearGradient>
+          <marker id="arr" markerWidth="7" markerHeight="7" refX="5.5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="rgba(148,163,184,.55)"/>
+          </marker>
+        </defs>
+
+        <!-- INPUT LAYER -->
+        <rect x="18" y="16" width="864" height="92" rx="12" fill="rgba(124,58,237,.07)" stroke="rgba(124,58,237,.28)" stroke-width="1"/>
+        <text x="450" y="37" text-anchor="middle" fill="#a78bfa" font-size="10.5" font-weight="800" font-family="system-ui" letter-spacing="2.5">INPUT LAYER</text>
+        <rect x="42"  y="46" width="188" height="44" rx="8" fill="rgba(124,58,237,.13)" stroke="rgba(124,58,237,.38)" stroke-width="1"/>
+        <text x="136" y="73" text-anchor="middle" fill="#e2e8f0" font-size="12.5" font-family="system-ui">📄 Requirements</text>
+        <rect x="248" y="46" width="160" height="44" rx="8" fill="rgba(124,58,237,.13)" stroke="rgba(124,58,237,.38)" stroke-width="1"/>
+        <text x="328" y="73" text-anchor="middle" fill="#e2e8f0" font-size="12.5" font-family="system-ui">🔗 API Specs</text>
+        <rect x="426" y="46" width="168" height="44" rx="8" fill="rgba(124,58,237,.13)" stroke="rgba(124,58,237,.38)" stroke-width="1"/>
+        <text x="510" y="73" text-anchor="middle" fill="#e2e8f0" font-size="12.5" font-family="system-ui">🎫 Jira / Confluence</text>
+        <rect x="612" y="46" width="152" height="44" rx="8" fill="rgba(124,58,237,.13)" stroke="rgba(124,58,237,.38)" stroke-width="1"/>
+        <text x="688" y="73" text-anchor="middle" fill="#e2e8f0" font-size="12.5" font-family="system-ui">📊 Excel / PDF</text>
+        <rect x="782" y="46" width="100" height="44" rx="8" fill="rgba(124,58,237,.13)" stroke="rgba(124,58,237,.38)" stroke-width="1"/>
+        <text x="832" y="73" text-anchor="middle" fill="#e2e8f0" font-size="12.5" font-family="system-ui">⚙️ CLI</text>
+
+        <!-- Arrow -->
+        <line x1="450" y1="108" x2="450" y2="138" stroke="rgba(148,163,184,.38)" stroke-width="1.8" marker-end="url(#arr)"/>
+
+        <!-- CORE ENGINE -->
+        <rect x="18" y="143" width="864" height="188" rx="12" fill="rgba(8,145,178,.055)" stroke="rgba(8,145,178,.24)" stroke-width="1"/>
+        <text x="450" y="166" text-anchor="middle" fill="#38bdf8" font-size="10.5" font-weight="800" font-family="system-ui" letter-spacing="2.5">TESTLOOM CORE ENGINE</text>
+
+        <!-- Prompt Engine -->
+        <rect x="42" y="176" width="205" height="138" rx="10" fill="rgba(124,58,237,.1)" stroke="rgba(124,58,237,.32)" stroke-width="1"/>
+        <text x="144" y="198" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="800" font-family="system-ui" letter-spacing="1.5">PROMPT ENGINE</text>
+        <text x="144" y="220" text-anchor="middle" fill="#cbd5e1" font-size="12" font-family="system-ui">Jinja2 Templates</text>
+        <text x="144" y="241" text-anchor="middle" fill="#cbd5e1" font-size="12" font-family="system-ui">YAML Prompt Library</text>
+        <text x="144" y="261" text-anchor="middle" fill="#cbd5e1" font-size="12" font-family="system-ui">Few-Shot Examples</text>
+        <text x="144" y="281" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="system-ui">Context Injection</text>
+        <text x="144" y="300" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="system-ui">Version Controlled</text>
+
+        <!-- Generators -->
+        <rect x="268" y="176" width="205" height="138" rx="10" fill="rgba(8,145,178,.1)" stroke="rgba(8,145,178,.32)" stroke-width="1"/>
+        <text x="370" y="198" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="800" font-family="system-ui" letter-spacing="1.5">GENERATORS</text>
+        <text x="370" y="220" text-anchor="middle" fill="#cbd5e1" font-size="12" font-family="system-ui">RequirementGenerator</text>
+        <text x="370" y="241" text-anchor="middle" fill="#94a3b8" font-size="11.5" font-family="system-ui">RAG Generator  (Phase 2)</text>
+        <text x="370" y="261" text-anchor="middle" fill="#94a3b8" font-size="11.5" font-family="system-ui">Multi-Agent Review (Phase 3)</text>
+        <text x="370" y="281" text-anchor="middle" fill="#cbd5e1" font-size="12" font-family="system-ui">LangGraph Agents</text>
+        <text x="370" y="300" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="system-ui">ChromaDB / pgvector</text>
+
+        <!-- LLM Gateway -->
+        <rect x="494" y="176" width="370" height="138" rx="10" fill="rgba(5,150,105,.08)" stroke="rgba(5,150,105,.28)" stroke-width="1"/>
+        <text x="679" y="198" text-anchor="middle" fill="#34d399" font-size="10" font-weight="800" font-family="system-ui" letter-spacing="1.5">LLM GATEWAY  (LiteLLM)</text>
+        <text x="679" y="218" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="system-ui">Provider-agnostic abstraction · 100+ models</text>
+        <rect x="508" y="228" width="112" height="30" rx="7" fill="rgba(5,150,105,.1)" stroke="rgba(5,150,105,.22)" stroke-width="1"/>
+        <text x="564" y="248" text-anchor="middle" fill="#cbd5e1" font-size="11.5" font-family="system-ui">Model Routing</text>
+        <rect x="632" y="228" width="112" height="30" rx="7" fill="rgba(5,150,105,.1)" stroke="rgba(5,150,105,.22)" stroke-width="1"/>
+        <text x="688" y="248" text-anchor="middle" fill="#cbd5e1" font-size="11.5" font-family="system-ui">Cost Tracking</text>
+        <rect x="756" y="228" width="96" height="30" rx="7" fill="rgba(5,150,105,.1)" stroke="rgba(5,150,105,.22)" stroke-width="1"/>
+        <text x="804" y="248" text-anchor="middle" fill="#cbd5e1" font-size="11.5" font-family="system-ui">Fallback</text>
+        <rect x="508" y="268" width="112" height="30" rx="7" fill="rgba(5,150,105,.1)" stroke="rgba(5,150,105,.22)" stroke-width="1"/>
+        <text x="564" y="288" text-anchor="middle" fill="#cbd5e1" font-size="11.5" font-family="system-ui">Audit Logging</text>
+        <rect x="632" y="268" width="112" height="30" rx="7" fill="rgba(5,150,105,.1)" stroke="rgba(5,150,105,.22)" stroke-width="1"/>
+        <text x="688" y="288" text-anchor="middle" fill="#cbd5e1" font-size="11.5" font-family="system-ui">PII Masking</text>
+        <rect x="756" y="268" width="96" height="30" rx="7" fill="rgba(5,150,105,.1)" stroke="rgba(5,150,105,.22)" stroke-width="1"/>
+        <text x="804" y="288" text-anchor="middle" fill="#cbd5e1" font-size="11.5" font-family="system-ui">Retry</text>
+        <text x="679" y="310" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="system-ui">Governance Guardrails · Human-in-the-Loop Approval</text>
+
+        <!-- Arrow -->
+        <line x1="450" y1="331" x2="450" y2="360" stroke="rgba(148,163,184,.38)" stroke-width="1.8" marker-end="url(#arr)"/>
+
+        <!-- PROVIDERS LAYER -->
+        <rect x="18" y="365" width="864" height="92" rx="12" fill="rgba(251,146,60,.055)" stroke="rgba(251,146,60,.22)" stroke-width="1"/>
+        <text x="450" y="386" text-anchor="middle" fill="#fb923c" font-size="10.5" font-weight="800" font-family="system-ui" letter-spacing="2.5">LLM PROVIDERS  (PLUGGABLE — SWAP VIA CONFIG)</text>
+        <rect x="40"  y="394" width="145" height="46" rx="8" fill="rgba(16,163,127,.1)" stroke="rgba(16,163,127,.25)" stroke-width="1"/>
+        <text x="112" y="422" text-anchor="middle" fill="#e2e8f0" font-size="13" font-family="system-ui">🤖 OpenAI</text>
+        <rect x="200" y="394" width="145" height="46" rx="8" fill="rgba(255,103,71,.1)" stroke="rgba(255,103,71,.25)" stroke-width="1"/>
+        <text x="272" y="422" text-anchor="middle" fill="#e2e8f0" font-size="13" font-family="system-ui">🔮 Anthropic</text>
+        <rect x="360" y="394" width="145" height="46" rx="8" fill="rgba(124,58,237,.1)" stroke="rgba(124,58,237,.25)" stroke-width="1"/>
+        <text x="432" y="422" text-anchor="middle" fill="#e2e8f0" font-size="13" font-family="system-ui">🦙 Ollama (Local)</text>
+        <rect x="520" y="394" width="145" height="46" rx="8" fill="rgba(0,120,212,.1)" stroke="rgba(0,120,212,.25)" stroke-width="1"/>
+        <text x="592" y="422" text-anchor="middle" fill="#e2e8f0" font-size="13" font-family="system-ui">☁️ Azure OpenAI</text>
+        <rect x="680" y="394" width="145" height="46" rx="8" fill="rgba(255,153,0,.1)" stroke="rgba(255,153,0,.25)" stroke-width="1"/>
+        <text x="752" y="422" text-anchor="middle" fill="#e2e8f0" font-size="13" font-family="system-ui">🔥 AWS Bedrock</text>
+
+        <!-- Arrow -->
+        <line x1="450" y1="457" x2="450" y2="484" stroke="rgba(148,163,184,.38)" stroke-width="1.8" marker-end="url(#arr)"/>
+
+        <!-- OUTPUT LAYER -->
+        <rect x="18" y="489" width="864" height="74" rx="12" fill="rgba(52,211,153,.055)" stroke="rgba(52,211,153,.22)" stroke-width="1"/>
+        <text x="450" y="511" text-anchor="middle" fill="#34d399" font-size="10.5" font-weight="800" font-family="system-ui" letter-spacing="2.5">OUTPUT &amp; INTEGRATIONS</text>
+        <text x="135" y="545" text-anchor="middle" fill="#cbd5e1" font-size="12.5" font-family="system-ui">📋 JSON / Markdown / CSV</text>
+        <text x="340" y="545" text-anchor="middle" fill="#cbd5e1" font-size="12.5" font-family="system-ui">🔌 REST API (Phase 4)</text>
+        <text x="555" y="545" text-anchor="middle" fill="#cbd5e1" font-size="12.5" font-family="system-ui">⚙️ Jenkins / GitHub Actions</text>
+        <text x="773" y="545" text-anchor="middle" fill="#cbd5e1" font-size="12.5" font-family="system-ui">📊 Jira / TestRail</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── FEATURES ────────────────────────── -->
+<section class="sec sec-light2" id="features">
+  <div class="container">
+    <div class="sec-hd fu">
+      <span class="badge bp" style="margin-bottom:16px">Features</span>
+      <h2 style="color:var(--text-l)">Everything you need. Nothing you don't.</h2>
+      <p style="color:var(--text-l2)">Built for QA engineers, SDETs, and test architects who refuse to compromise on quality or flexibility.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card fu">
+        <div class="fi fi-p">🔀</div>
+        <h3>LLM-Agnostic Gateway</h3>
+        <p>Swap between OpenAI, Anthropic, Ollama, or Azure purely via config. Zero code changes required — ever. Powered by LiteLLM.</p>
+      </div>
+      <div class="feat-card fu">
+        <div class="fi fi-t">🧠</div>
+        <h3>Smart Prompt Engineering</h3>
+        <p>Jinja2 + YAML prompt templates are version-controlled, team-editable, and support few-shot examples and context injection.</p>
+      </div>
+      <div class="feat-card fu">
+        <div class="fi fi-g">🔍</div>
+        <h3>RAG-Powered Context</h3>
+        <p>ChromaDB-backed vector search injects relevant historical test cases and project context into every generation request. <em>(Phase 2)</em></p>
+      </div>
+      <div class="feat-card fu">
+        <div class="fi fi-p">🤖</div>
+        <h3>Multi-Agent Review Mesh</h3>
+        <p>A review mesh of specialised LangGraph agents checks coverage, traceability, edge cases, and language quality before output. <em>(Phase 3)</em></p>
+      </div>
+      <div class="feat-card fu">
+        <div class="fi fi-t">🛡️</div>
+        <h3>Governance &amp; Audit</h3>
+        <p>Full audit trails, PII masking, human-in-the-loop approval gates, and per-request cost tracking built directly into the pipeline.</p>
+      </div>
+      <div class="feat-card fu">
+        <div class="fi fi-g">⚡</div>
+        <h3>CI/CD First-Class</h3>
+        <p>Native Jenkins and GitHub Actions integration. Generate test cases on every PR or sprint — part of your existing workflow.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── HOW IT WORKS ──────────────────────── -->
+<section class="sec" id="how-it-works">
+  <div class="container">
+    <div class="sec-hd fu">
+      <span class="badge bt" style="margin-bottom:16px">How It Works</span>
+      <h2>From requirement to test suite in seconds</h2>
+      <p>Four steps. Any LLM. Any output format.</p>
+    </div>
+    <div class="steps fu">
+      <div class="step">
+        <div class="step-n">1</div>
+        <h3>Ingest</h3>
+        <p>Feed in requirements, user stories, API specs, or Jira tickets via CLI, Python SDK, or REST API.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <h3>Analyse</h3>
+        <p>The Prompt Engine constructs a rich, context-aware prompt from your input using YAML templates and optional RAG context.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <h3>Generate</h3>
+        <p>The LLM Gateway routes the request to your chosen provider and returns structured, traceable test cases.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">4</div>
+        <h3>Publish</h3>
+        <p>Test suites are exported as JSON, Markdown, or CSV — ready for Jira, TestRail, or your CI pipeline.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────── QUICK START ──────────────────────── -->
+<section class="sec sec-dark3" id="quickstart">
+  <div class="container">
+    <div class="sec-hd fu">
+      <span class="badge bp" style="margin-bottom:16px">Quick Start</span>
+      <h2>Up and running in 2 minutes</h2>
+      <p>Works with any LLM — even a free local Ollama model.</p>
+    </div>
+
+    <div class="fu" style="max-width:760px;margin:0 auto">
+      <div class="tabs">
+        <button class="tab on" onclick="showTab(this,'install')">Install</button>
+        <button class="tab"    onclick="showTab(this,'config')">Configure</button>
+        <button class="tab"    onclick="showTab(this,'cli')">CLI</button>
+        <button class="tab"    onclick="showTab(this,'sdk')">Python SDK</button>
+      </div>
+
+      <div id="p-install" class="pnl on">
+        <div class="code-blk"><span class="c"># Install TestLoom</span>
+<span class="cm">pip install</span> <span class="v">testloom</span>
+
+<span class="c"># With RAG support (Phase 2)</span>
+<span class="cm">pip install</span> <span class="s">"testloom[rag]"</span>
+
+<span class="c"># Verify</span>
+<span class="cm">testloom</span> <span class="v">version</span></div>
+      </div>
+
+      <div id="p-config" class="pnl">
+        <div class="code-blk"><span class="c"># testloom.yaml — place in your project root</span>
+<span class="k">llm</span><span class="op">:</span>
+  <span class="k">provider</span><span class="op">:</span> <span class="s">openai</span>           <span class="c"># openai | anthropic | ollama | azure</span>
+  <span class="k">model</span><span class="op">:</span>    <span class="s">gpt-4o</span>            <span class="c"># any model string LiteLLM supports</span>
+  <span class="k">api_key</span><span class="op">:</span>  <span class="s">${OPENAI_API_KEY}</span>  <span class="c"># or set TESTLOOM_LLM__API_KEY env var</span>
+
+<span class="k">generation</span><span class="op">:</span>
+  <span class="k">max_cases_per_request</span><span class="op">:</span> <span class="n">20</span>
+  <span class="k">include_negative_cases</span><span class="op">:</span> <span class="k">true</span>
+  <span class="k">include_edge_cases</span><span class="op">:</span>     <span class="k">true</span>
+  <span class="k">include_test_data</span><span class="op">:</span>      <span class="k">true</span></div>
+      </div>
+
+      <div id="p-cli" class="pnl">
+        <div class="code-blk"><span class="c"># Generate from a requirements file</span>
+<span class="cm">testloom generate</span> <span class="op">-i</span> requirements.md <span class="op">-f</span> markdown
+
+<span class="c"># Inline text, limit to 10 cases</span>
+<span class="cm">testloom generate</span> <span class="op">--text</span> <span class="s">"As a user, I want to reset my password via email"</span> <span class="op">--max-cases</span> <span class="n">10</span>
+
+<span class="c"># Use a free local Ollama model (zero cost)</span>
+<span class="cm">testloom generate</span> <span class="op">-i</span> story.md <span class="op">--model</span> <span class="s">ollama/llama3</span>
+
+<span class="c"># Export JSON, save to file</span>
+<span class="cm">testloom generate</span> <span class="op">-i</span> requirements.md <span class="op">-f</span> json <span class="op">-o</span> tests.json</div>
+      </div>
+
+      <div id="p-sdk" class="pnl">
+        <div class="code-blk"><span class="k">import</span> <span class="v">asyncio</span>
+<span class="k">from</span> <span class="v">testloom</span> <span class="k">import</span> <span class="f">Settings</span><span class="op">,</span> <span class="f">GenerationRequest</span><span class="op">,</span> <span class="f">RequirementGenerator</span>
+<span class="k">from</span> <span class="v">testloom.gateway.registry</span> <span class="k">import</span> <span class="f">GatewayRegistry</span>
+
+<span class="v">settings</span> <span class="op">=</span> <span class="f">Settings</span><span class="op">.</span><span class="f">load</span><span class="op">(</span><span class="s">"testloom.yaml"</span><span class="op">)</span>
+<span class="v">gateway</span>  <span class="op">=</span> <span class="f">GatewayRegistry</span><span class="op">.</span><span class="f">create</span><span class="op">(</span><span class="v">settings</span><span class="op">.</span><span class="v">llm</span><span class="op">)</span>
+<span class="v">gen</span>      <span class="op">=</span> <span class="f">RequirementGenerator</span><span class="op">(</span><span class="v">gateway</span><span class="op">,</span> <span class="v">settings</span><span class="op">)</span>
+
+<span class="v">req</span> <span class="op">=</span> <span class="f">GenerationRequest</span><span class="op">(</span>
+    <span class="v">requirement_text</span><span class="op">=</span><span class="s">"Users can filter products by category and price range"</span><span class="op">,</span>
+    <span class="v">max_cases</span><span class="op">=</span><span class="n">15</span><span class="op">,</span>
+<span class="op">)</span>
+
+<span class="v">suite</span> <span class="op">=</span> <span class="v">asyncio</span><span class="op">.</span><span class="f">run</span><span class="op">(</span><span class="v">gen</span><span class="op">.</span><span class="f">generate</span><span class="op">(</span><span class="v">req</span><span class="op">))</span>
+
+<span class="k">for</span> <span class="v">tc</span> <span class="k">in</span> <span class="v">suite</span><span class="op">.</span><span class="v">test_cases</span><span class="op">:</span>
+    <span class="f">print</span><span class="op">(</span><span class="s">f"[{tc.test_type.value}] {tc.title}"</span><span class="op">)</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────── PROVIDERS ────────────────────────── -->
+<section class="sec sec-light" id="providers">
+  <div class="container">
+    <div class="sec-hd fu">
+      <span class="badge bg" style="margin-bottom:16px">Providers</span>
+      <h2 style="color:var(--text-l)">Any LLM. Your choice.</h2>
+      <p style="color:var(--text-l2)">Powered by LiteLLM — one interface for 100+ models. Switch providers in a single line of config.</p>
+    </div>
+    <div class="prov-grid fu">
+      <div class="prov-card">
+        <div class="prov-ico" style="background:rgba(16,163,127,.1)">🤖</div>
+        <div class="prov-name">OpenAI</div>
+        <div class="prov-note">GPT-4o, GPT-4o-mini</div>
+      </div>
+      <div class="prov-card">
+        <div class="prov-ico" style="background:rgba(255,103,71,.1)">🔮</div>
+        <div class="prov-name">Anthropic</div>
+        <div class="prov-note">Claude Sonnet &amp; Opus</div>
+      </div>
+      <div class="prov-card">
+        <div class="prov-ico" style="background:rgba(124,58,237,.1)">🦙</div>
+        <div class="prov-name">Ollama</div>
+        <div class="prov-note">Local · Zero cost</div>
+      </div>
+      <div class="prov-card">
+        <div class="prov-ico" style="background:rgba(0,120,212,.1)">☁️</div>
+        <div class="prov-name">Azure OpenAI</div>
+        <div class="prov-note">Enterprise VNet</div>
+      </div>
+      <div class="prov-card">
+        <div class="prov-ico" style="background:rgba(255,153,0,.1)">🔥</div>
+        <div class="prov-name">AWS Bedrock</div>
+        <div class="prov-note">Claude &amp; Llama on AWS</div>
+      </div>
+      <div class="prov-card">
+        <div class="prov-ico" style="background:rgba(52,211,153,.1)">🌐</div>
+        <div class="prov-name">Any OpenAI-compat</div>
+        <div class="prov-note">Custom api_base URL</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────── ROADMAP ─────────────────────────── -->
+<section class="sec sec-light2" id="roadmap">
+  <div class="container">
+    <div class="sec-hd fu">
+      <span class="badge bp" style="margin-bottom:16px">Roadmap</span>
+      <h2 style="color:var(--text-l)">Where we're going</h2>
+      <p style="color:var(--text-l2)">Six focused phases — from open-source scaffold to enterprise-grade AI testing platform.</p>
+    </div>
+    <div class="rm fu">
+      <div class="rm-row">
+        <div class="rm-phase"><div class="rm-pl">Phase 0</div><div class="rm-pn">Foundation</div></div>
+        <div class="rm-line">
+          <div class="rm-dot rd-done"></div>
+          <div class="rm-info">
+            <h3>✅ Scaffold &amp; Core Abstractions</h3>
+            <p>Project structure, CI/CD pipeline, LLM gateway abstraction, Pydantic domain models, Docker Compose, GitHub Actions.</p>
+          </div>
+        </div>
+      </div>
+      <div class="rm-row">
+        <div class="rm-phase"><div class="rm-pl">Phase 1</div><div class="rm-pn">Generation</div></div>
+        <div class="rm-line">
+          <div class="rm-dot rd-active"></div>
+          <div class="rm-info">
+            <h3>🔄 Basic Test Generation — In Progress</h3>
+            <p>RequirementGenerator, Jinja2 Prompt Engine, CLI with Rich output, JSON/Markdown/CSV formatters, structured logging.</p>
+          </div>
+        </div>
+      </div>
+      <div class="rm-row">
+        <div class="rm-phase"><div class="rm-pl">Phase 2</div><div class="rm-pn">RAG</div></div>
+        <div class="rm-line">
+          <div class="rm-dot rd-plan"></div>
+          <div class="rm-info">
+            <h3>📋 Context-Aware Generation</h3>
+            <p>LangGraph orchestration, ChromaDB vector store, Jira/Confluence/PDF connectors, RAG-powered context injection.</p>
+          </div>
+        </div>
+      </div>
+      <div class="rm-row">
+        <div class="rm-phase"><div class="rm-pl">Phase 3</div><div class="rm-pn">Review</div></div>
+        <div class="rm-line">
+          <div class="rm-dot rd-plan"></div>
+          <div class="rm-info">
+            <h3>📋 Multi-Agent Review Mesh</h3>
+            <p>Quality scoring agents, coverage analysis, governance guardrails, human-in-the-loop approval workflow, audit trails.</p>
+          </div>
+        </div>
+      </div>
+      <div class="rm-row">
+        <div class="rm-phase"><div class="rm-pl">Phase 4</div><div class="rm-pn">API &amp; UI</div></div>
+        <div class="rm-line">
+          <div class="rm-dot rd-plan"></div>
+          <div class="rm-info">
+            <h3>📋 REST API &amp; Web Interface</h3>
+            <p>FastAPI server, web dashboard, Jenkins plugin, GitHub Actions integration, Jira and TestRail direct push.</p>
+          </div>
+        </div>
+      </div>
+      <div class="rm-row">
+        <div class="rm-phase"><div class="rm-pl">Phase 5</div><div class="rm-pn">Enterprise</div></div>
+        <div class="rm-line">
+          <div class="rm-dot rd-plan"></div>
+          <div class="rm-info">
+            <h3>📋 Enterprise Scale</h3>
+            <p>Observability layer, prompt lineage tracking, SSO, multi-tenant support, plugin marketplace.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────── CTA ─────────────────────────────── -->
+<section class="cta-sec">
+  <div class="container">
+    <h2 class="fu">Ready to weave better tests?</h2>
+    <p class="fu">Open source. No lock-in. Up and running in 2 minutes.</p>
+    <div class="cta-btns fu">
+      <a href="https://github.com/saurabh-oss/testloom" class="btn-white" target="_blank" rel="noopener">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        ⭐ Star on GitHub
+      </a>
+      <a href="https://github.com/saurabh-oss/testloom/blob/main/CONTRIBUTING.md" class="btn-ghost" target="_blank" rel="noopener">
+        Contribute →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────── FOOTER ──────────────────────────── -->
+<footer>
+  <div class="ft-grid">
+    <div class="ft-brand">
+      <a class="logo" href="#" style="text-decoration:none;color:var(--text-d)">
+        <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
+          <defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#0891b2"/></linearGradient></defs>
+          <rect width="30" height="30" rx="7" fill="url(#lg2)"/>
+          <path d="M7 9.5 Q15 7.5 23 9.5 Q15 11.5 7 13.5 Q15 15.5 23 17.5 Q15 19.5 7 21.5" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <line x1="9"  y1="7.5" x2="9"  y2="23" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="15" y1="7.5" x2="15" y2="23" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="21" y1="7.5" x2="21" y2="23" stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        TestLoom
+      </a>
+      <p>Weaving comprehensive test cases from the threads of your requirements. Open-source, LLM-agnostic, built for quality engineers everywhere.</p>
+    </div>
+    <div>
+      <h4>Project</h4>
+      <ul>
+        <li><a href="https://github.com/saurabh-oss/testloom" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://github.com/saurabh-oss/testloom/releases">Releases</a></li>
+        <li><a href="https://github.com/saurabh-oss/testloom/issues">Issues</a></li>
+        <li><a href="https://github.com/saurabh-oss/testloom/discussions">Discussions</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Docs</h4>
+      <ul>
+        <li><a href="https://github.com/saurabh-oss/testloom#quick-start">Quick Start</a></li>
+        <li><a href="https://github.com/saurabh-oss/testloom/blob/main/docs/architecture/adr-001-llm-gateway.md">Architecture</a></li>
+        <li><a href="https://github.com/saurabh-oss/testloom/blob/main/CONTRIBUTING.md">Contributing</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Community</h4>
+      <ul>
+        <li><a href="https://github.com/saurabh-oss/testloom/blob/main/LICENSE">Apache 2.0</a></li>
+        <li><a href="https://github.com/saurabh-oss/testloom/stargazers">Stargazers</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="ft-btm">
+    <p>© 2026 TestLoom Contributors. Licensed under Apache 2.0.</p>
+    <p>Built with ❤️ for the quality engineering community.</p>
+  </div>
+</footer>
+
+<script>
+  /* Tab switcher */
+  function showTab(btn, name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+    document.querySelectorAll('.pnl').forEach(p => p.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('p-' + name).classList.add('on');
+  }
+
+  /* Fade-up on scroll */
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fu').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
