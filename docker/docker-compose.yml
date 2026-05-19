@@ -1,0 +1,33 @@
+services:
+  testloom:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    environment:
+      - TESTLOOM_LLM__PROVIDER=openai
+      - TESTLOOM_LLM__MODEL=gpt-4o
+      - TESTLOOM_LLM__API_KEY=${OPENAI_API_KEY}
+      - TESTLOOM_LOG_LEVEL=DEBUG
+    volumes:
+      - ../src:/app/src
+      - ../output:/app/output
+
+  # Optional: local vector store for RAG (Phase 2)
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+
+  # Optional: local LLM via Ollama (zero-cost development)
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+volumes:
+  chroma_data:
+  ollama_data:
