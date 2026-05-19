@@ -35,16 +35,19 @@ class GatewayRegistry:
         """
         provider = settings.provider.lower()
 
+        common_kwargs: dict[str, Any] = dict(
+            api_key=settings.api_key,
+            api_base=settings.api_base,
+            temperature=settings.temperature,
+            max_tokens=settings.max_tokens,
+            timeout=settings.timeout,
+            retry_attempts=settings.retry_attempts,
+            retry_backoff=settings.retry_backoff,
+        )
+
         # Check custom providers first
         if provider in cls._custom_providers:
-            return cls._custom_providers[provider](
-                model=settings.model,
-                api_key=settings.api_key,
-                api_base=settings.api_base,
-                temperature=settings.temperature,
-                max_tokens=settings.max_tokens,
-                timeout=settings.timeout,
-            )
+            return cls._custom_providers[provider](model=settings.model, **common_kwargs)
 
         # Default: use LiteLLM which handles most providers via model string
         model_string = settings.model
@@ -52,14 +55,7 @@ class GatewayRegistry:
             # LiteLLM convention: "provider/model" for non-OpenAI
             model_string = f"{provider}/{settings.model}"
 
-        return LiteLLMProvider(
-            model=model_string,
-            api_key=settings.api_key,
-            api_base=settings.api_base,
-            temperature=settings.temperature,
-            max_tokens=settings.max_tokens,
-            timeout=settings.timeout,
-        )
+        return LiteLLMProvider(model=model_string, **common_kwargs)
 
     @classmethod
     def available_providers(cls) -> list[str]:

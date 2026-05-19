@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import csv
 import io
-import json
+import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
+from xml.dom import minidom
 
 from testloom.core.models import TestSuite
 
@@ -115,11 +116,78 @@ class CSVFormatter(BaseFormatter):
         return output.getvalue()
 
 
+class JUnitFormatter(BaseFormatter):
+    """Format test suite as JUnit XML — compatible with Jenkins, GitHub Actions, and most CI systems."""
+
+    @property
+    def extension(self) -> str:
+        return "xml"
+
+    def format(self, suite: TestSuite) -> str:
+        testsuites = ET.Element("testsuites")
+        ts = ET.SubElement(testsuites, "testsuite")
+        ts.set("name", suite.name)
+        ts.set("tests", str(suite.total_cases))
+        ts.set("failures", "0")
+        ts.set("errors", "0")
+        ts.set("skipped", "0")
+        ts.set("time", "0.0")
+        ts.set("timestamp", suite.generated_at.isoformat())
+
+        model = suite.generation_metadata.get("model", "unknown")
+        props = ET.SubElement(ts, "properties")
+        for key, value in [
+            ("model", model),
+            ("provider", suite.generation_metadata.get("provider", "unknown")),
+            ("source_requirement", (suite.source_requirement or "")[:200]),
+            ("total_cases", str(suite.total_cases)),
+        ]:
+            prop = ET.SubElement(props, "property")
+            prop.set("name", key)
+            prop.set("value", str(value))
+
+        for tc in suite.test_cases:
+            tc_elem = ET.SubElement(ts, "testcase")
+            tc_elem.set("name", f"{tc.id}: {tc.title}")
+            tc_elem.set("classname", tc.test_type.value)
+            tc_elem.set("time", "0.0")
+
+            # Steps and metadata as system-out
+            lines = [
+                f"Description: {tc.description}",
+                f"Priority: {tc.priority.value}",
+                f"Tags: {', '.join(tc.tags)}",
+                "",
+                "Preconditions:",
+                *[f"  - {p}" for p in tc.preconditions],
+                "",
+                "Steps:",
+            ]
+            for step in tc.steps:
+                data = f" [data: {step.test_data}]" if step.test_data else ""
+                lines.append(f"  {step.step_number}. {step.action}{data}")
+                lines.append(f"     → {step.expected_result}")
+            lines += ["", f"Expected outcome: {tc.expected_outcome}"]
+            if tc.requirement_ids:
+                lines.append(f"Traces to: {', '.join(tc.requirement_ids)}")
+            if tc.confidence_score is not None:
+                lines.append(f"Confidence: {tc.confidence_score:.2f}")
+
+            sysout = ET.SubElement(tc_elem, "system-out")
+            sysout.text = "\n".join(lines)
+
+        # Pretty-print with minidom
+        raw = ET.tostring(testsuites, encoding="unicode")
+        return minidom.parseString(raw).toprettyxml(indent="  ", encoding=None)  # type: ignore[return-value]
+
+
 FORMATTERS: dict[str, type[BaseFormatter]] = {
     "json": JSONFormatter,
     "markdown": MarkdownFormatter,
     "md": MarkdownFormatter,
     "csv": CSVFormatter,
+    "junit": JUnitFormatter,
+    "xml": JUnitFormatter,
 }
 
 

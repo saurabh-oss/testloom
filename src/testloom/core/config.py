@@ -20,6 +20,8 @@ class LLMSettings(BaseSettings):
     temperature: float = Field(default=0.3, ge=0.0, le=2.0)
     max_tokens: int = Field(default=4096, ge=100)
     timeout: int = Field(default=120, description="Request timeout in seconds")
+    retry_attempts: int = Field(default=3, ge=1, le=10, description="Max retry attempts on transient failure")
+    retry_backoff: float = Field(default=1.5, ge=0.5, description="Exponential backoff base in seconds")
 
 
 class GenerationSettings(BaseSettings):

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "testloom"
-version = "0.1.0"
+version = "0.2.0"
 description = "TestLoom — Weaving comprehensive test cases from the threads of your requirements. Open-source, LLM-agnostic AI test generation framework."
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -44,6 +44,7 @@ rag = [
     "langgraph>=0.2",
     "chromadb>=0.5",
     "sentence-transformers>=3.0",
+    "pypdf>=4.0",
 ]
 api = [
     "fastapi>=0.111",

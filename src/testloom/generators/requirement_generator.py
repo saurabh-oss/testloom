@@ -6,14 +6,14 @@ and generates structured test cases using the configured LLM.
 
 from __future__ import annotations
 
-import json
+import asyncio
 import uuid
 from typing import Any
 
 import structlog
 
 from testloom.core.config import Settings
-from testloom.core.exceptions import GenerationError, ParseError
+from testloom.core.exceptions import GenerationError
 from testloom.core.models import (
     GenerationRequest,
     Priority,
@@ -25,6 +25,7 @@ from testloom.core.models import (
 from testloom.gateway.base import LLMGateway
 from testloom.generators.base import BaseGenerator
 from testloom.prompts.engine import PromptEngine
+from testloom.utils.json_extract import extract_json
 
 logger = structlog.get_logger()
 
@@ -87,22 +88,33 @@ class RequirementGenerator(BaseGenerator):
         )
         return suite
 
+    async def generate_batch(
+        self,
+        requests: list[GenerationRequest],
+        concurrency: int = 3,
+    ) -> list[TestSuite]:
+        """Generate test suites for multiple requirements concurrently.
+
+        Args:
+            requests: List of generation requests.
+            concurrency: Max parallel LLM calls (default 3, respect rate limits).
+
+        Returns:
+            List of TestSuite objects in the same order as requests.
+        """
+        semaphore = asyncio.Semaphore(concurrency)
+
+        async def _guarded(req: GenerationRequest) -> TestSuite:
+            async with semaphore:
+                return await self.generate(req)
+
+        return list(await asyncio.gather(*(_guarded(r) for r in requests)))
+
     def _parse_response(
         self, content: str, request: GenerationRequest, model: str
     ) -> list[TestCase]:
         """Parse LLM response into structured TestCase objects."""
-        # Extract JSON from response (handle markdown code blocks)
-        json_str = content.strip()
-        if json_str.startswith("```"):
-            lines = json_str.split("\n")
-            json_str = "\n".join(lines[1:])
-            if json_str.endswith("```"):
-                json_str = json_str[:-3]
-
-        try:
-            data = json.loads(json_str)
-        except json.JSONDecodeError as e:
-            raise ParseError(f"Failed to parse LLM response as JSON: {e}") from e
+        data = extract_json(content)
 
         test_cases_data = data if isinstance(data, list) else data.get("test_cases", [])
 
