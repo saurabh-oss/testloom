@@ -575,7 +575,7 @@
         <rect x="268" y="176" width="205" height="138" rx="10" fill="rgba(8,145,178,.1)" stroke="rgba(8,145,178,.32)" stroke-width="1"/>
         <text x="370" y="198" text-anchor="middle" fill="#38bdf8" font-size="10" font-weight="800" font-family="system-ui" letter-spacing="1.5">GENERATORS</text>
         <text x="370" y="220" text-anchor="middle" fill="#cbd5e1" font-size="12" font-family="system-ui">RequirementGenerator</text>
-        <text x="370" y="241" text-anchor="middle" fill="#94a3b8" font-size="11.5" font-family="system-ui">RAG Generator  (Phase 2)</text>
+        <text x="370" y="241" text-anchor="middle" fill="#cbd5e1" font-size="11.5" font-family="system-ui">RAG Generator</text>
         <text x="370" y="261" text-anchor="middle" fill="#94a3b8" font-size="11.5" font-family="system-ui">Multi-Agent Review (Phase 3)</text>
         <text x="370" y="281" text-anchor="middle" fill="#cbd5e1" font-size="12" font-family="system-ui">LangGraph Agents</text>
         <text x="370" y="300" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="system-ui">ChromaDB / pgvector</text>
@@ -652,7 +652,7 @@
       <div class="feat-card fu">
         <div class="fi fi-g">🔍</div>
         <h3>RAG-Powered Context</h3>
-        <p>ChromaDB-backed vector search injects relevant historical test cases and project context into every generation request. <em>(Phase 2)</em></p>
+        <p>ChromaDB-backed vector search injects relevant historical test cases and project context into every generation request. Progressively smarter with every run.</p>
       </div>
       <div class="feat-card fu">
         <div class="fi fi-p">🤖</div>
@@ -727,7 +727,7 @@
         <div class="code-blk"><span class="c"># Install TestLoom</span>
 <span class="cm">pip install</span> <span class="v">testloom</span>
 
-<span class="c"># With RAG support (Phase 2)</span>
+<span class="c"># With RAG support (ChromaDB + embeddings)</span>
 <span class="cm">pip install</span> <span class="s">"testloom[rag]"</span>
 
 <span class="c"># Verify</span>
@@ -752,14 +752,17 @@
         <div class="code-blk"><span class="c"># Generate from a requirements file</span>
 <span class="cm">testloom generate</span> <span class="op">-i</span> requirements.md <span class="op">-f</span> markdown
 
-<span class="c"># Inline text, limit to 10 cases</span>
-<span class="cm">testloom generate</span> <span class="op">--text</span> <span class="s">"As a user, I want to reset my password via email"</span> <span class="op">--max-cases</span> <span class="n">10</span>
+<span class="c"># Inline text — specify test types and extra context</span>
+<span class="cm">testloom generate</span> <span class="op">--text</span> <span class="s">"Users can filter products by category and price range"</span> \
+  <span class="op">--types</span> <span class="s">functional,negative,boundary</span> \
+  <span class="op">--context</span> <span class="s">"Filters are client-side; max 500 products per page"</span> \
+  <span class="op">--max-cases</span> <span class="n">12</span>
+
+<span class="c"># Batch-generate across many requirements concurrently</span>
+<span class="cm">testloom batch</span> requirements.md <span class="op">--output-dir</span> output/ <span class="op">-f</span> junit <span class="op">--concurrency</span> <span class="n">3</span>
 
 <span class="c"># Use a free local Ollama model (zero cost)</span>
-<span class="cm">testloom generate</span> <span class="op">-i</span> story.md <span class="op">--model</span> <span class="s">ollama/llama3</span>
-
-<span class="c"># Export JSON, save to file</span>
-<span class="cm">testloom generate</span> <span class="op">-i</span> requirements.md <span class="op">-f</span> json <span class="op">-o</span> tests.json</div>
+<span class="cm">testloom generate</span> <span class="op">-i</span> story.md <span class="op">--model</span> <span class="s">ollama/llama3</span></div>
       </div>
 
       <div id="p-sdk" class="pnl">
@@ -850,20 +853,20 @@
       <div class="rm-row">
         <div class="rm-phase"><div class="rm-pl">Phase 1</div><div class="rm-pn">Generation</div></div>
         <div class="rm-line">
-          <div class="rm-dot rd-active"></div>
+          <div class="rm-dot rd-done"></div>
           <div class="rm-info">
-            <h3>🔄 Basic Test Generation — In Progress</h3>
-            <p>RequirementGenerator, Jinja2 Prompt Engine, CLI with Rich output, JSON/Markdown/CSV formatters, structured logging.</p>
+            <h3>✅ Basic Test Generation — Complete</h3>
+            <p>RequirementGenerator, Jinja2 Prompt Engine, CLI with Rich output, JSON/Markdown/CSV/JUnit formatters, retry logic, structured logging.</p>
           </div>
         </div>
       </div>
       <div class="rm-row">
         <div class="rm-phase"><div class="rm-pl">Phase 2</div><div class="rm-pn">RAG</div></div>
         <div class="rm-line">
-          <div class="rm-dot rd-plan"></div>
+          <div class="rm-dot rd-active"></div>
           <div class="rm-info">
-            <h3>📋 Context-Aware Generation</h3>
-            <p>LangGraph orchestration, ChromaDB vector store, Jira/Confluence/PDF connectors, RAG-powered context injection.</p>
+            <h3>🔄 Context-Aware Generation — Complete</h3>
+            <p>RAGGenerator, ChromaDB ContextStore (living test knowledge base), sentence-transformers embeddings, PDF/MD/TXT input processors, batch generation with concurrency control.</p>
           </div>
         </div>
       </div>
